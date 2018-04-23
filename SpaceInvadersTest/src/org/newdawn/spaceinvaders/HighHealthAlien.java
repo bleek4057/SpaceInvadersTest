@@ -9,12 +9,9 @@ package org.newdawn.spaceinvaders;
  *
  * @author John
  */
-public class Alien_lvl2 extends AlienEntity{
-    //How long the alien waits between firing shotss
-    private float shotWait;
+public class HighHealthAlien extends AlienEntity{
     
-    public Alien_lvl2(Game game,String ref,int x,int y, float _shotWait) {
-        super(game, ref,x,y);
-        shotWait = _shotWait;
+    public HighHealthAlien(Game game,String ref,int x,int y, int _health) {
+        super(game, ref,x,y, _health);
     }
 }

@@ -11,8 +11,8 @@ package org.newdawn.spaceinvaders;
  */
 public class StraightShot extends ShotEntity {
     
-    public StraightShot(Game game, String sprite, int x, int y, double _speedMod, float _angle) {
-        super(game, sprite, x, y, _speedMod, _angle);
+    public StraightShot(Game game, String sprite, int x, int y, double _speedMod, float _angle, int _damage) {
+        super(game, sprite, x, y, _speedMod, _angle, _damage);
     }
     
     @Override

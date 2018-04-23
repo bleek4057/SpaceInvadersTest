@@ -30,6 +30,8 @@ import javax.swing.JPanel;
  * @author Kevin Glass
  */
 public class Game extends Canvas {
+        public static Game instance;
+        
 	/** The stragey that allows us to use accelerate page flipping */
 	private BufferStrategy strategy;
 	/** True if the game is currently "running", i.e. the game loop is looping */
@@ -63,7 +65,7 @@ public class Game extends Canvas {
 	private boolean logicRequiredThisLoop = false;
 	
         //Enumerates the different ammo types the player can fire
-        private enum ShotType { SINGLE, TRIPLE, BOOMARANG }
+        public static enum ShotType { SINGLE, TRIPLE, BOOMARANG }
         private ShotType selectedShotType = ShotType.SINGLE;
         
         //List of shots fired by the player this frame. Needed for multiammo types
@@ -73,7 +75,9 @@ public class Game extends Canvas {
 	/**
 	 * Construct our game and set it running.
 	 */
-	public Game() {
+	public Game() {   
+                initSingleton();
+                
 		// create a frame to contain our game
 		JFrame container = new JFrame("Space Invaders 101");
 		
@@ -120,6 +124,14 @@ public class Game extends Canvas {
 		initEntities();
 	}
 	
+        private void initSingleton(){
+            if(instance == null) instance = this;
+        }
+        
+        public ArrayList getShots(){
+            return shots;
+        }
+        
 	/**
 	 * Start a fresh game, this should clear out any old data and
 	 * create a new set.
@@ -148,7 +160,16 @@ public class Game extends Canvas {
 		alienCount = 0;
 		for (int row=0;row<5;row++) {
 			for (int x=0;x<12;x++) {
-                            Entity alien = new AlienEntity(this,"sprites/alien.gif",100+(x*50),(50)+row*30);
+                            Entity alien = null;
+                            if(row == 0){
+                                //Adds heavy enemies to the back row
+                                alien = new AlienEntity(this,"sprites/largeAlien.gif",100+(x*50),(50)+row*30, 2);
+                            }else if (row == 1){
+                                alien = new ProjectileAlien(this, "sprites/projectileAlien.gif", 100+(x*50),(50)+row*30, 1, 0.0005f);
+                            }else{
+                                //The rest are regular enemies
+                                alien = new HighHealthAlien(this,"sprites/alien.gif",100+(x*50),(50)+row*30, 1);
+                            }
                             entities.add(alien);
                             alienCount++;
 			}
@@ -224,9 +245,7 @@ public class Game extends Canvas {
 		if (System.currentTimeMillis() - lastFire < firingInterval) {
 			return;
 		}
-		
-                shots.clear();
-                
+		                
                 //Leave this outside the swith statement for cleanliness
                 lastFire = System.currentTimeMillis();
                 int numShots = 1;
@@ -244,38 +263,45 @@ public class Game extends Canvas {
                 }
                 
                 //Fire using defined properties
-                fire(numShots, selectedShotType);
-
-                                        
-                //Sends all shots fired this frame to the entities list for updates
-                for(int i = 0; i < shots.size(); i++){                 
-                    entities.add(shots.get(i));
-                }
+                fire(ship.getX(), ship.getY(), numShots, selectedShotType, -1);
 	}
 	
-        //Fires one or more shots at angles based on the number of shots requested
-        private void fire(int _numShots, ShotType _shotType){
+        /*Fires one or more shots at angles based on the number of shots requested
+          Direction signifies whether the bullet is being fired up by the player or down 
+            by an alien [-1, 1]
+        */
+        public void fire(int x, int y, int _numShots, ShotType _shotType, int _direction){
             float fireAngle = 2 * _numShots;
-            
+            System.out.println("fire");
             String shotTexture = "shot";
-            
+            //shots.clear();
+
             for(int i = 0; i < _numShots; i++){
                 //Adds a positive angle for even numbers and a negative angle for odd numbers
                 switch(_shotType){
                     case SINGLE:
                         shotTexture = "shot";
-                        shots.add(new StraightShot(this,"sprites/" + shotTexture + ".gif",ship.getX()+10,ship.getY()-30, 1, 90 + ((( i % 2 == 0) ? i : -i-1 ) * fireAngle)));
+                        shots.add(new StraightShot(this,"sprites/" + shotTexture + ".gif", x + 10, y - 30, 1, 
+                                90 + ((( i % 2 == 0) ? i : -i-1 ) * fireAngle * _direction), 1));
                         break;
                     case TRIPLE:
                         shotTexture = "roundShot";
-                        shots.add(new StraightShot(this,"sprites/" + shotTexture + ".gif",ship.getX()+10,ship.getY()-30, 3, 90 + ((( i % 2 == 0) ? i : -i-1 ) * fireAngle)));
+                        shots.add(new StraightShot(this,"sprites/" + shotTexture + ".gif", x + 10, y - 30, 3,
+                                90 + ((( i % 2 == 0) ? i : -i-1 ) * fireAngle * _direction), 1));
                         break;
                     case BOOMARANG:
                         shotTexture = "roundShot";
-                        shots.add(new BoomarangShot(this,"sprites/" + shotTexture + ".gif",ship.getX()+10,ship.getY()-30, 2, 90 + ((( i % 2 == 0) ? i : -i-1 ) * fireAngle), 5f));
+                        shots.add(new BoomarangShot(this,"sprites/" + shotTexture + ".gif", x + 10, y - 30, 2, 
+                                90 + ((( i % 2 == 0) ? i : -i-1 ) * fireAngle * _direction), 10f, 1));
                         break;
+                }
             }
+                
+            //Sends all shots fired this frame to the entities list for updates
+            for(int i = 0; i < shots.size(); i++){                 
+                entities.add(shots.get(i));
             }
+            
         }
         /**
          * Changes the type of shot the Ship fires based on
@@ -322,10 +348,16 @@ public class Game extends Canvas {
 			}
 			
 			// cycle round drawing all the entities we have in the game
+                        // Folding update loop for projectile enemies into this loop for effeciency
 			for (int i=0;i<entities.size();i++) {
 				Entity entity = (Entity) entities.get(i);
 				
 				entity.draw(g);
+                                
+                                if(entity instanceof ProjectileAlien){
+                                    ProjectileAlien projAlien = (ProjectileAlien)entity;
+                                    projAlien.tryFire();
+                                }
 			}
 			
 			// brute force collisions, compare every entity against
@@ -388,6 +420,9 @@ public class Game extends Canvas {
 				tryToFire();
 			}
 			
+                        
+                        //shots.clear();
+                        
 			// finally pause for a bit. Note: this should run us at about
 			// 100 fps but on windows this might vary each loop due to
 			// a bad implementation of timer
@@ -444,8 +479,8 @@ public class Game extends Canvas {
                         }
                         
                         if(e.getKeyCode() == KeyEvent.VK_SHIFT){
-                            updateShotType(ShotType.BOOMARANG);
-                            firePressed = true;
+                            //updateShotType(ShotType.BOOMARANG);
+                            //firePressed = true;
                         }
                         
 

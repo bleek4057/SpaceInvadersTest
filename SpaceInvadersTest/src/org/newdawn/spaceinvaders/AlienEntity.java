@@ -5,12 +5,12 @@ package org.newdawn.spaceinvaders;
  * 
  * @author Kevin Glass
  */
-public class AlienEntity extends Entity {
+public class AlienEntity extends Entity implements Damageable{
 	/** The speed at which the alient moves horizontally */
 	private double moveSpeed = 75;
 	/** The game in which the entity exists */
-	private Game game;
-	
+	protected Game game;
+	private int health;
 	/**
 	 * Create a new alien entity
 	 * 
@@ -19,13 +19,37 @@ public class AlienEntity extends Entity {
 	 * @param x The intial x location of this alien
 	 * @param y The intial y location of this alient
 	 */
-	public AlienEntity(Game game,String ref,int x,int y) {
+	public AlienEntity(Game game,String ref,int x,int y, int _health) {
 		super(ref,x,y);
 		
+                health = _health;
 		this.game = game;
 		dx = -moveSpeed;
 	}
+        
+        public int getHealth(){
+            return health;
+        }
+        
+        public void setHealth(int _health){
+            health = _health;
+        }
+        
+        public void takeDamage(int _damage){
+            setHealth(health - 1);
+            
+            if(health <= 0){
+                die();
+            }
+        }
+        
+        private void die(){
+            // remove the affected entities
+            game.removeEntity(this);
 
+            // notify the game that the alien has been killed
+            game.notifyAlienKilled();
+        }
 	/**
 	 * Request that this alien moved based on time elapsed
 	 * 
@@ -34,6 +58,7 @@ public class AlienEntity extends Entity {
 	public void move(long delta) {
 		// if we have reached the left hand side of the screen and
 		// are moving left then request a logic update 
+                
 		if ((dx < 0) && (x < 10)) {
 			game.updateLogic();
 		}

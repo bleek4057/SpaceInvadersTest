@@ -45,12 +45,11 @@ public abstract class Entity {
 		this.y = y;
 	}
 	
-        public void translate(double dx, double dy, long delta){
-            System.out.println("x: " + dx + ", y: " + dy);
-            setHorizontalMovement(dx);
-            setVerticalMovement(dy);
+        public void translate(double _dx, double _dy){
+            this.dx = _dx;
+            this.dy = _dy;
         }
-                
+        
 	/**
 	 * Request that this entity move itself based on a certain amount
 	 * of time passing.
@@ -61,6 +60,7 @@ public abstract class Entity {
 		// update the location of the entity based on move speeds
 		x += (delta * dx) / 1000;
 		y += (delta * dy) / 1000;
+ 
 	}
 	
 	/**
