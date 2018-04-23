@@ -87,7 +87,11 @@ public class AlienEntity extends Entity implements Damageable{
 			game.notifyDeath();
 		}
 	}
-	
+        
+        @Override
+	public void onDestroy(){
+            
+        }
 	/**
 	 * Notification that this alien has collided with another entity
 	 * 

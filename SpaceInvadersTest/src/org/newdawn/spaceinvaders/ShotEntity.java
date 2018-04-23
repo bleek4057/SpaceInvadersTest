@@ -9,7 +9,7 @@ public class ShotEntity extends Entity {
 	/** The vertical speed at which the players shot moves */
 	private double moveSpeed = -600;
 	/** The game in which this entity exists */
-	private Game game;
+	protected Game game;
 	/** True if this shot has been "used", i.e. its hit something */
 	private boolean used = false;
         
@@ -62,6 +62,11 @@ public class ShotEntity extends Entity {
         public void setAngle(float _angle){
             angle = _angle;
         }
+        
+        @Override
+        public void onDestroy(){
+            
+        }
 	/**
 	 * Notification that this shot has collided with another
 	 * entity
@@ -80,12 +85,13 @@ public class ShotEntity extends Entity {
                     //notify the enemy that it has been damaged
                     Damageable damageableAlien = (Damageable)other;
                     damageableAlien.takeDamage(damage);
-
+                    onDestroy();
                     game.removeEntity(this);
                     used = true;
                 }else if(other instanceof ShipEntity && !playerProj){
                     Damageable damageableShip = (Damageable)other;
                     damageableShip.takeDamage(damage);
+                    onDestroy();
                 }
 	}
 }

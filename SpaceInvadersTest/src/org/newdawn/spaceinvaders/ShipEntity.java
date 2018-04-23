@@ -71,4 +71,10 @@ public class ShipEntity extends Entity implements Damageable{
         public void die(){
             game.notifyDeath();
         }
+        
+        //Must be overriden but the ship is never destroyed
+        @Override
+        public void onDestroy(){
+            
+        }
 }

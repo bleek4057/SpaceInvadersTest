@@ -236,6 +236,28 @@ public class Game extends Canvas {
 		}
 	}
 	
+        //Returns a list of enemies within a specified radius of the given point
+        public ArrayList findEnemyInRange(int x, int y, int r){
+            ArrayList enemiesInRange = new ArrayList();
+            double dist;
+            int enemyX, enemyY;
+            for(int i = 0; i < entities.size(); i++){
+                Entity entity = (Entity)entities.get(i);
+                if(entity instanceof AlienEntity){
+                    AlienEntity alien = (AlienEntity)entity;
+                    enemyX = alien.getX();
+                    enemyY = alien.getY();
+                    
+                    dist = ( (enemyX - x) * (enemyX - x)) + ((enemyY - y) * (enemyY - y));
+                    
+                    if(dist <= (r * r)){
+                        enemiesInRange.add(alien);
+                    }
+                }
+            }
+            
+            return enemiesInRange;
+        }
 	/**
 	 * Attempt to fire a shot from the player. Its called "try"
 	 * since we must first check that the player can fire at this 
@@ -522,6 +544,11 @@ public class Game extends Canvas {
                             firePressed = true;
                         }
                         
+                        if(e.getKeyCode() == KeyEvent.VK_Z){
+                            updateShotType(ShotType.BOMB);
+                            firePressed = true;
+                        }
+                        
 
 		} 
 		
@@ -543,7 +570,7 @@ public class Game extends Canvas {
 			if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
 				rightPressed = false;
 			}
-			if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_CONTROL || e.getKeyCode() == KeyEvent.VK_SHIFT) {
+			if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_CONTROL || e.getKeyCode() == KeyEvent.VK_SHIFT || e.getKeyCode() == KeyEvent.VK_Z) {
 				firePressed = false;
 			}
 		}

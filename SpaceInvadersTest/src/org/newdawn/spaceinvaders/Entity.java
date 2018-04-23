@@ -153,4 +153,7 @@ public abstract class Entity {
 	 * @param other The entity with which this entity collided.
 	 */
 	public abstract void collidedWith(Entity other);
+        
+        //Gives entities the option of triggering something when they are destroyed
+        public abstract void onDestroy();
 }
