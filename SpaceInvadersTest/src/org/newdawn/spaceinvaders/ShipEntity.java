@@ -61,7 +61,7 @@ public class ShipEntity extends Entity implements Damageable{
         @Override
         public void takeDamage(int _damage) {
             health -= _damage;
-            
+            System.out.println("Ship damage");
             if(health <= 0){
                 die();
             }

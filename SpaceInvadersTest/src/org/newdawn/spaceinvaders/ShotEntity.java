@@ -92,6 +92,8 @@ public class ShotEntity extends Entity {
                     Damageable damageableShip = (Damageable)other;
                     damageableShip.takeDamage(damage);
                     onDestroy();
+                    game.removeEntity(this);
+                    used = true;
                 }
 	}
 }
