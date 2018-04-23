@@ -83,11 +83,11 @@ public class Game extends Canvas {
 		
 		// get hold the content of the frame and set up the resolution of the game
 		JPanel panel = (JPanel) container.getContentPane();
-		panel.setPreferredSize(new Dimension(800,600));
+		panel.setPreferredSize(new Dimension(800,800));
 		panel.setLayout(null);
 		
 		// setup our canvas size and put it into the content of the frame
-		setBounds(0,0,800,600);
+		setBounds(0,0,800,800);
 		panel.add(this);
 		
 		// Tell AWT not to bother repainting our canvas since we're
@@ -165,7 +165,7 @@ public class Game extends Canvas {
                                 //Adds heavy enemies to the back row
                                 alien = new AlienEntity(this,"sprites/largeAlien.gif",100+(x*50),(50)+row*30, 2);
                             }else if (row == 1){
-                                alien = new ProjectileAlien(this, "sprites/projectileAlien.gif", 100+(x*50),(50)+row*30, 1, 0.0005f);
+                                alien = new ProjectileAlien(this, "sprites/projectileAlien.gif", 100+(x*50),(50)+row*30, 1, 6000);
                             }else{
                                 //The rest are regular enemies
                                 alien = new HighHealthAlien(this,"sprites/alien.gif",100+(x*50),(50)+row*30, 1);
@@ -263,42 +263,41 @@ public class Game extends Canvas {
                 }
                 
                 //Fire using defined properties
-                fire(ship.getX(), ship.getY(), numShots, selectedShotType, -1);
+                fire(ship.getX(), ship.getY(), numShots, selectedShotType, 1, ship);
 	}
 	
         /*Fires one or more shots at angles based on the number of shots requested
           Direction signifies whether the bullet is being fired up by the player or down 
             by an alien [-1, 1]
         */
-        public void fire(int x, int y, int _numShots, ShotType _shotType, int _direction){
+        public void fire(int x, int y, int _numShots, ShotType _shotType, int _direction, Entity _owner){
             float fireAngle = 2 * _numShots;
-            System.out.println("fire");
             String shotTexture = "shot";
-            //shots.clear();
+            boolean playerProj = _owner instanceof ShipEntity;
 
             for(int i = 0; i < _numShots; i++){
                 //Adds a positive angle for even numbers and a negative angle for odd numbers
                 switch(_shotType){
                     case SINGLE:
-                        shotTexture = "shot";
-                        shots.add(new StraightShot(this,"sprites/" + shotTexture + ".gif", x + 10, y - 30, 1, 
-                                90 + ((( i % 2 == 0) ? i : -i-1 ) * fireAngle * _direction), 1));
+                        shotTexture = playerProj ? "shot" : "alienShot";
+                        shots.add(new StraightShot(this,"sprites/" + shotTexture + ".gif", x + 10, y, 6, 
+                                (90 * _direction) + ((( i % 2 == 0) ? i : -i-1 ) * fireAngle ), 1, playerProj));
                         break;
                     case TRIPLE:
                         shotTexture = "roundShot";
-                        shots.add(new StraightShot(this,"sprites/" + shotTexture + ".gif", x + 10, y - 30, 3,
-                                90 + ((( i % 2 == 0) ? i : -i-1 ) * fireAngle * _direction), 1));
+                        shots.add(new StraightShot(this,"sprites/" + shotTexture + ".gif", x + 10, y, 3,
+                                (90 * _direction) + ((( i % 2 == 0) ? i : -i-1 ) * fireAngle ), 1, playerProj));
                         break;
                     case BOOMARANG:
                         shotTexture = "roundShot";
-                        shots.add(new BoomarangShot(this,"sprites/" + shotTexture + ".gif", x + 10, y - 30, 2, 
-                                90 + ((( i % 2 == 0) ? i : -i-1 ) * fireAngle * _direction), 10f, 1));
+                        shots.add(new BoomarangShot(this,"sprites/" + shotTexture + ".gif", x + 10, y, 2, 
+                                (90* _direction) + ((( i % 2 == 0) ? i : -i-1 ) * fireAngle * _direction), 10f, 1, playerProj));
                         break;
                 }
             }
                 
             //Sends all shots fired this frame to the entities list for updates
-            for(int i = 0; i < shots.size(); i++){                 
+            for(int i = 0; i < shots.size(); i++){  
                 entities.add(shots.get(i));
             }
             
@@ -335,8 +334,8 @@ public class Game extends Canvas {
 			// Get hold of a graphics context for the accelerated 
 			// surface and blank it out
 			Graphics2D g = (Graphics2D) strategy.getDrawGraphics();
-			g.setColor(Color.black);
-			g.fillRect(0,0,800,600);
+			g.setColor(new Color(209, 238, 84));
+			g.fillRect(0,0,800,800);
 			
 			// cycle round asking each entity to move itself
 			if (!waitingForKeyPress) {
@@ -349,7 +348,7 @@ public class Game extends Canvas {
 			
 			// cycle round drawing all the entities we have in the game
                         // Folding update loop for projectile enemies into this loop for effeciency
-			for (int i=0;i<entities.size();i++) {
+			for (int i=0; i < entities.size(); i++) {
 				Entity entity = (Entity) entities.get(i);
 				
 				entity.draw(g);
@@ -394,7 +393,7 @@ public class Game extends Canvas {
 			// if we're waiting for an "any key" press then draw the 
 			// current message 
 			if (waitingForKeyPress) {
-				g.setColor(Color.white);
+				g.setColor(Color.black);
 				g.drawString(message,(800-g.getFontMetrics().stringWidth(message))/2,250);
 				g.drawString("Press any key",(800-g.getFontMetrics().stringWidth("Press any key"))/2,300);
 			}
@@ -421,7 +420,7 @@ public class Game extends Canvas {
 			}
 			
                         
-                        //shots.clear();
+                        shots.clear();
                         
 			// finally pause for a bit. Note: this should run us at about
 			// 100 fps but on windows this might vary each loop due to
@@ -549,7 +548,7 @@ public class Game extends Canvas {
 	 * @param argv The arguments that are passed into our game
 	 */
 	public static void main(String argv[]) {
-		Game g =new Game();
+		Game g = new Game();
 
 		// Start the main game loop, note: this method will not
 		// return until the game has finished running. Hence we are

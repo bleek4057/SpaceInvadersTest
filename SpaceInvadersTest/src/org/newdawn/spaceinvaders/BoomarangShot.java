@@ -13,8 +13,8 @@ public class BoomarangShot extends ShotEntity{
     //How many degrees each update cycle the boomarang turns
     private float rotation;
     
-    public BoomarangShot(Game game, String sprite, int x, int y, double _speedMod, float _angle, float _rotation, int _damage) {
-        super(game, sprite, x, y, _speedMod, _angle, _damage);
+    public BoomarangShot(Game game, String sprite, int x, int y, double _speedMod, float _angle, float _rotation, int _damage, boolean _playerProj) {
+        super(game, sprite, x, y, _speedMod, _angle, _damage, _playerProj);
         
         rotation = _rotation;
     }
