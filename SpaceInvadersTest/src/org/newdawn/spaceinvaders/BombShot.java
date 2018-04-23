@@ -9,11 +9,11 @@ package org.newdawn.spaceinvaders;
  *
  * @author John
  */
-public class BoomarangShot extends ShotEntity{
+public class BombShot extends ShotEntity{
     //How many degrees each update cycle the boomarang turns
     private float rotation;
     
-    public BoomarangShot(Game game, String sprite, int x, int y, double _speedMod, float _angle, float _rotation, int _damage, boolean _playerProj) {
+    public BombShot(Game game, String sprite, int x, int y, double _speedMod, float _angle, float _rotation, int _damage, boolean _playerProj) {
         super(game, sprite, x, y, _speedMod, _angle, _damage, _playerProj);
         
         rotation = _rotation;
@@ -21,14 +21,6 @@ public class BoomarangShot extends ShotEntity{
     
     @Override
     public void move(long _delta){
-        float origAngle = super.getAngle();
-        super.setAngle(0);
-        
-        super.translate(0,-500);
-        super.move(_delta);
-
-        super.setAngle(origAngle);
-        super.rotate(rotation);
         super.move(_delta);
     }
 }

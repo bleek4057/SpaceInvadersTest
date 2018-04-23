@@ -10,5 +10,6 @@ package org.newdawn.spaceinvaders;
  * @author John
  */
 public interface Damageable {
+    public void die();
     public void takeDamage(int _damage);
 }

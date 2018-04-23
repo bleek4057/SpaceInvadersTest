@@ -28,7 +28,7 @@ public class ProjectileAlien extends AlienEntity{
     
     private void fire(){
         lastFire = System.currentTimeMillis();
-        Game.instance.fire(getX(), getY(), 1, Game.ShotType.SINGLE, -1, this);
+        Game.instance.fireSpread(getX(), getY(), 1, Game.ShotType.SINGLE, -1, this);
         //Game.instance.getShots().add(new StraightShot(super.game, "sprites/" + shotTexture + ".gif", getX() + 10,getY() + 30, 1, 90, -1));
     }
     

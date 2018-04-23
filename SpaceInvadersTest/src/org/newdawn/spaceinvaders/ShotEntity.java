@@ -84,7 +84,8 @@ public class ShotEntity extends Entity {
                     game.removeEntity(this);
                     used = true;
                 }else if(other instanceof ShipEntity && !playerProj){
-                    System.out.println("Damage");
+                    Damageable damageableShip = (Damageable)other;
+                    damageableShip.takeDamage(damage);
                 }
 	}
 }

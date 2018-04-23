@@ -65,7 +65,7 @@ public class Game extends Canvas {
 	private boolean logicRequiredThisLoop = false;
 	
         //Enumerates the different ammo types the player can fire
-        public static enum ShotType { SINGLE, TRIPLE, BOOMARANG }
+        public static enum ShotType { SINGLE, DOUBLE, TRIPLE, BOMB }
         private ShotType selectedShotType = ShotType.SINGLE;
         
         //List of shots fired by the player this frame. Needed for multiammo types
@@ -153,7 +153,7 @@ public class Game extends Canvas {
 	 */
 	private void initEntities() {
 		// create the player ship and place it roughly in the center of the screen
-		ship = new ShipEntity(this,"sprites/ship.gif",370,550);
+		ship = new ShipEntity(this,"sprites/ship.gif",370,550, 3);
 		entities.add(ship);
 		
 		// create a block of aliens (5 rows, by 12 aliens, spaced evenly)
@@ -163,17 +163,18 @@ public class Game extends Canvas {
                             Entity alien = null;
                             if(row == 0){
                                 //Adds heavy enemies to the back row
-                                alien = new AlienEntity(this,"sprites/largeAlien.gif",100+(x*50),(50)+row*30, 2);
+                                alien = new HighHealthAlien(this,"sprites/largeAlien.gif",100+(x*50),(50)+row*30, 2);
                             }else if (row == 1){
                                 alien = new ProjectileAlien(this, "sprites/projectileAlien.gif", 100+(x*50),(50)+row*30, 1, 6000);
                             }else{
                                 //The rest are regular enemies
-                                alien = new HighHealthAlien(this,"sprites/alien.gif",100+(x*50),(50)+row*30, 1);
+                                alien = new AlienEntity(this,"sprites/alien.gif",100+(x*50),(50)+row*30, 1);
                             }
                             entities.add(alien);
                             alienCount++;
 			}
 		}
+                System.out.println(alienCount);
 	}
 	
 	/**
@@ -254,23 +255,62 @@ public class Game extends Canvas {
                     case SINGLE:
                         numShots = 1;
                         break;
+                    case DOUBLE:
+                        numShots = 2;
+                        break;
                     case TRIPLE:
                         numShots = 3;
                         break;
-                    case BOOMARANG:
+                    case BOMB:
                         numShots = 1;
                         break;
                 }
                 
                 //Fire using defined properties
-                fire(ship.getX(), ship.getY(), numShots, selectedShotType, 1, ship);
+                if(numShots % 2 == 0){
+                    fireStraight(ship.getX(), ship.getY(), numShots, selectedShotType, 1, ship);
+                } else {
+                    fireSpread(ship.getX(), ship.getY(), numShots, selectedShotType, 1, ship);
+                }
 	}
 	
+        public void fireStraight(int x, int y, int _numShots, ShotType _shotType, int _direction, Entity _owner){
+            String shotTexture = "shot";
+            boolean playerProj = _owner instanceof ShipEntity;
+
+            for(int i = 0; i < _numShots; i++){
+                //Adds a positive angle for even numbers and a negative angle for odd numbers
+                switch(_shotType){
+                    case DOUBLE:
+                    case SINGLE:
+                        shotTexture = playerProj ? "shot" : "alienShot";
+                        shots.add(new StraightShot(this,"sprites/" + shotTexture + ".gif", x + (i * 20), y, 6, 
+                                90 * _direction, 1, playerProj));
+                        break;
+                    case TRIPLE:
+                        shotTexture = "roundShot";
+                        shots.add(new StraightShot(this,"sprites/" + shotTexture + ".gif", x + 10, y, 3,
+                                90 * _direction, 1, playerProj));
+                        break;
+                    case BOMB:
+                        shotTexture = "roundShot";
+                        shots.add(new BombShot(this,"sprites/" + shotTexture + ".gif", x + 10, y, 2, 
+                                90* _direction, 10f, 1, playerProj));
+                        break;
+                }
+            }
+                
+            //Sends all shots fired this frame to the entities list for updates
+            for(int i = 0; i < shots.size(); i++){  
+                entities.add(shots.get(i));
+            }
+        }
+        
         /*Fires one or more shots at angles based on the number of shots requested
           Direction signifies whether the bullet is being fired up by the player or down 
             by an alien [-1, 1]
         */
-        public void fire(int x, int y, int _numShots, ShotType _shotType, int _direction, Entity _owner){
+        public void fireSpread(int x, int y, int _numShots, ShotType _shotType, int _direction, Entity _owner){
             float fireAngle = 2 * _numShots;
             String shotTexture = "shot";
             boolean playerProj = _owner instanceof ShipEntity;
@@ -288,9 +328,9 @@ public class Game extends Canvas {
                         shots.add(new StraightShot(this,"sprites/" + shotTexture + ".gif", x + 10, y, 3,
                                 (90 * _direction) + ((( i % 2 == 0) ? i : -i-1 ) * fireAngle ), 1, playerProj));
                         break;
-                    case BOOMARANG:
+                    case BOMB:
                         shotTexture = "roundShot";
-                        shots.add(new BoomarangShot(this,"sprites/" + shotTexture + ".gif", x + 10, y, 2, 
+                        shots.add(new BombShot(this,"sprites/" + shotTexture + ".gif", x + 10, y, 2, 
                                 (90* _direction) + ((( i % 2 == 0) ? i : -i-1 ) * fireAngle * _direction), 10f, 1, playerProj));
                         break;
                 }
@@ -311,8 +351,8 @@ public class Game extends Canvas {
         
 	/**
 	 * The main game loop. This loop is running during all game
-	 * play as is responsible for the following activities:
-	 * <p>
+	 * play as is responsible for the following activities:	
+ * <p>
 	 * - Working out the speed of the game loop to update moves
 	 * - Moving the game entities
 	 * - Drawing the screen contents (entities, text)
@@ -478,8 +518,8 @@ public class Game extends Canvas {
                         }
                         
                         if(e.getKeyCode() == KeyEvent.VK_SHIFT){
-                            //updateShotType(ShotType.BOOMARANG);
-                            //firePressed = true;
+                            updateShotType(ShotType.DOUBLE);
+                            firePressed = true;
                         }
                         
 

@@ -43,7 +43,7 @@ public class AlienEntity extends Entity implements Damageable{
             }
         }
         
-        private void die(){
+        public void die(){
             // remove the affected entities
             game.removeEntity(this);
 

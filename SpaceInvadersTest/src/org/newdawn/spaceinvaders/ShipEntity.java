@@ -5,9 +5,10 @@ package org.newdawn.spaceinvaders;
  * 
  * @author Kevin Glass
  */
-public class ShipEntity extends Entity {
+public class ShipEntity extends Entity implements Damageable{
 	/** The game in which the ship exists */
 	private Game game;
+        private int health;
 	
 	/**
 	 * Create a new entity to represent the players ship
@@ -17,9 +18,9 @@ public class ShipEntity extends Entity {
 	 * @param x The initial x location of the player's ship
 	 * @param y The initial y location of the player's ship
 	 */
-	public ShipEntity(Game game,String ref,int x,int y) {
+	public ShipEntity(Game game,String ref,int x,int y, int _health) {
 		super(ref,x,y);
-		
+		health = _health;
 		this.game = game;
 	}
 	
@@ -56,4 +57,18 @@ public class ShipEntity extends Entity {
 			game.notifyDeath();
 		}
 	}
+
+        @Override
+        public void takeDamage(int _damage) {
+            health -= _damage;
+            
+            if(health <= 0){
+                die();
+            }
+        }
+        
+        @Override 
+        public void die(){
+            game.notifyDeath();
+        }
 }
